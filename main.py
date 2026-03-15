@@ -1,4 +1,12 @@
-from flask import Flask, request, jsonify
+"""
+This module contains the Flask API for the BulletFarm application. 
+
+The API provides endpoints for performing CRUD operations on resources used within the BulletFarm application. 
+It includes functionalities such as creating, retrieving, updating, and deleting data, 
+as well as handling various user inputs and providing appropriate responses. 
+
+Error handling is integrated to manage exceptions and return meaningful error messages to the clients.
+"""from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
