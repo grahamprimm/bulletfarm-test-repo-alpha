@@ -1,4 +1,53 @@
-from flask import Flask, request, jsonify
+# Test cases for Flask API
+
+import pytest
+from flask import json
+from main import app
+
+@pytest.fixture
+def client():
+    with app.test_client() as client:
+        yield client
+
+
+def test_internal_error(client):
+    response = client.get('/api/nonexistent')  # Trigger a 500 error
+    assert response.status_code == 500
+    assert response.json['error'] == 'Internal Server Error'
+
+
+def test_create_data(client):
+    # Test successful data creation
+    response = client.post('/api/data', json={'data': 'test'})
+    assert response.status_code == 201
+    assert response.json['message'] == 'Data received'
+
+    # Test missing data field
+    response = client.post('/api/data', json={})
+    assert response.status_code == 400
+    assert response.json['error'] == 'Bad Request'
+    assert response.json['message'] == 'Data field is required.'
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# Custom error handler for 500 errors
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal Server Error'}), 500
+
+# Example endpoint
+@app.route('/api/data', methods=['POST'])
+def create_data():
+    # Validate input
+    if not request.json or 'data' not in request.json:
+        return jsonify({'error': 'Bad Request', 'message': 'Data field is required.'}), 400
+    data = request.json['data']
+    # Process the data (your logic here)
+    return jsonify({'message': 'Data received', 'data': data}), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
