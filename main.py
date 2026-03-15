@@ -2,6 +2,27 @@ from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
+@app.errorhandler(500)
+def handle_500_error(error):
+    response = jsonify({'error': 'Internal Server Error', 'message': str(error)})
+    response.status_code = 500
+    return response
+
+@app.route('/api/resource', methods=['POST'])
+def create_resource():
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Bad Request', 'message': 'Name is required'}), 400
+    # Process the valid data here...
+    return jsonify({'message': 'Resource created successfully'}), 201
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+# Integration tests will be added to handle various scenarios.from flask import Flask, request, jsonify
+
+app = Flask(__name__)
+
 # Global error handler for 500 errors
 @app.errorhandler(500)
 def internal_error(error):
