@@ -9,6 +9,13 @@ def internal_error(error):
     response.status_code = 500
     return response
 
+# Global error handler for 404 errors
+@app.errorhandler(404)
+def not_found(error):
+    response = jsonify({'error': 'Resource not found'})
+    response.status_code = 404
+    return response
+
 # Input validation for POST endpoints
 @app.route('/api/resource', methods=['POST'])
 def create_resource():
@@ -25,8 +32,12 @@ def create_resource():
 
     return jsonify({'message': 'Resource created successfully'}), 201
 
+# Start the Flask application
 if __name__ == '__main__':
-    app.run(debug=True)def add(a, b):
+    app.run(debug=True)
+
+
+def add(a, b):
     return a + b
 
 
