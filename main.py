@@ -9,6 +9,13 @@ def internal_error(error):
     response.status_code = 500
     return response
 
+# Global error handler for 400 errors
+@app.errorhandler(400)
+def bad_request(error):
+    response = jsonify({'error': str(error)})
+    response.status_code = 400
+    return response
+
 # Input validation for POST endpoints
 @app.route('/api/resource', methods=['POST'])
 def create_resource():
@@ -26,7 +33,8 @@ def create_resource():
     return jsonify({'message': 'Resource created successfully'}), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)def add(a, b):
+    app.run(debug=True)
+def add(a, b):
     return a + b
 
 
@@ -36,6 +44,8 @@ def multiply(x, y):
 
 
 def divide(numerator, denominator):
+    if denominator == 0:
+        raise ValueError('Denominator cannot be zero')
     return numerator / denominator
 
 
@@ -45,3 +55,4 @@ def process_list(items):
         if i > 0:
             output.append(i * 2)
     return output
+
