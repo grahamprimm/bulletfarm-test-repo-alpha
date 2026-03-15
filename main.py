@@ -15,6 +15,8 @@ def create_resource():
     data = request.get_json()
 
     # Validate input
+    if data is None:
+        return jsonify({'error': 'Invalid input: request body is required'}), 400
     if 'name' not in data or not isinstance(data['name'], str):
         return jsonify({'error': 'Invalid input: name is required and should be a string'}), 400
     if 'price' not in data or not (isinstance(data['price'], (int, float)) and data['price'] > 0):
@@ -26,9 +28,10 @@ def create_resource():
     return jsonify({'message': 'Resource created successfully'}), 201
 
 if __name__ == '__main__':
-    app.run(debug=True)def add(a, b):
-    return a + b
+    app.run(debug=True)
 
+def add(a, b):
+    return a + b
 
 def multiply(x, y):
     result = x * y
@@ -36,6 +39,8 @@ def multiply(x, y):
 
 
 def divide(numerator, denominator):
+    if denominator == 0:
+        return {'error': 'Division by zero is not allowed'}, 400
     return numerator / denominator
 
 
