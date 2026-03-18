@@ -1,47 +1,38 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, g
+import time
+from collections import defaultdict
 
 app = Flask(__name__)
 
-# Global error handler for 500 errors
-@app.errorhandler(500)
-def internal_error(error):
-    response = jsonify({'error': 'Internal Server Error'})
-    response.status_code = 500
-    return response
+# Rate Limiting Middleware
+rate_limit = defaultdict(lambda: {'count': 0, 'timestamp': time.time()})
+RATE_LIMIT = 100  # requests per minute
 
-# Input validation for POST endpoints
-@app.route('/api/resource', methods=['POST'])
-def create_resource():
-    data = request.get_json()
+@app.before_request
+def limit_requests():
+    ip = request.remote_addr
+    current_time = time.time()
+    data = rate_limit[ip]
 
-    # Validate input
-    if 'name' not in data or not isinstance(data['name'], str):
-        return jsonify({'error': 'Invalid input: name is required and should be a string'}), 400
-    if 'price' not in data or not (isinstance(data['price'], (int, float)) and data['price'] > 0):
-        return jsonify({'error': 'Invalid input: price is required and should be a positive number'}), 400
+    # Reset the counter if a minute has passed
+    if current_time - data['timestamp'] > 60:
+        data['count'] = 1
+        data['timestamp'] = current_time
+    else:
+        data['count'] += 1
 
-    # Proceed with creating the resource
-    # ... (resource creation logic goes here)
+    # Check if limit is exceeded
+    if data['count'] > RATE_LIMIT:
+        return jsonify({'error': 'Too Many Requests'}), 429
 
-    return jsonify({'message': 'Resource created successfully'}), 201
+    # Set rate limit headers
+    remaining = RATE_LIMIT - data['count']
+    g.response.headers['X-RateLimit-Limit'] = str(RATE_LIMIT)
+    g.response.headers['X-RateLimit-Remaining'] = str(remaining)
+
+@app.route('/some_endpoint', methods=['GET', 'POST'])
+def some_endpoint():
+    return jsonify({'message': 'Success'})
 
 if __name__ == '__main__':
-    app.run(debug=True)def add(a, b):
-    return a + b
-
-
-def multiply(x, y):
-    result = x * y
-    return result
-
-
-def divide(numerator, denominator):
-    return numerator / denominator
-
-
-def process_list(items):
-    output = []
-    for i in items:
-        if i > 0:
-            output.append(i * 2)
-    return output
+    app.run(debug=True)
