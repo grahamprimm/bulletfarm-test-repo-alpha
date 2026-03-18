@@ -4,30 +4,33 @@ from sqlite3 import Error
 class Database:
     def __init__(self, db_file):
         self.db_file = db_file
-        self.pool = []
+        self.connection_pool = []
+        self.pool_size = 5
+        self._initialize_connection_pool()
+
+    def _initialize_connection_pool(self):
+        for _ in range(self.pool_size):
+            conn = self.create_connection()
+            if conn:
+                self.connection_pool.append(conn)
 
     def create_connection(self):
         conn = None
         try:
             conn = sqlite3.connect(self.db_file)
-            return conn
         except Error as e:
             print(e)
         return conn
 
     def get_connection(self):
-        if self.pool:
-            return self.pool.pop()
-        return self.create_connection()
+        if self.connection_pool:
+            return self.connection_pool.pop()
+        else:
+            return self.create_connection()
 
     def release_connection(self, conn):
-        self.pool.append(conn)
+        self.connection_pool.append(conn)
 
-# Create a single instance of the Database connection pool
-database = Database('your_database.db')
-
-def get_connection():
-    return database.get_connection()
-
-def release_connection(conn):
-    return database.release_connection(conn)
+    def close_all_connections(self):
+        for conn in self.connection_pool:
+            conn.close()

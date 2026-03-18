@@ -5,11 +5,14 @@ from sqlite3 import Error
 app = Flask(__name__)
 
 # Import the connection pool methods
-from db import get_connection, release_connection
+from db import Database
+
+# Initialize database connection pool
+db = Database('/path/to/your/database.db')
 
 @app.route('/some_endpoint', methods=['GET'])
 def some_endpoint():
-    conn = get_connection()
+    conn = db.get_connection()
     try:
         # Use the connection for database operations
         cursor = conn.cursor()
@@ -20,7 +23,7 @@ def some_endpoint():
     except Error as e:
         return {'error': str(e)}, 500
     finally:
-        release_connection(conn)
+        db.release_connection(conn)
 
 # ... other routes
 
